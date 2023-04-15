@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script src="./lib-flexible.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background-color: #f5f5f5;
+            }
+            .flex {
+                display: flex;
+            }
+            .list-column {
+                height: auto;
+                margin-left: 0.3rem;
+            }
+            .waterfallShell {
+                width: 100%;
+            }
+            .goodsCard {
+                width: 171px;
+                margin-bottom: 0.4rem;
+            }
+            .goodsCard .ad img {
+                display: block;
+                width: 100%;
+                border-radius: 0.4rem 0.4rem;
+            }
+            .goodsCard .img img {
+                display: block;
+                width: 100%;
+                border-radius: 0.4rem 0.4rem 0 0;
+            }
+            .goodsCard .content {
+                padding: 0.4rem;
+                border-radius: 0 0 0.4rem 0.4rem;
+                background-color: #fff;
+                font-size: 0.4rem;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="app">
+            <waterfall-shell :list="flowList" :item-key="'key'" :column="column">
+                <template v-slot="item">
+                    <goods-card :water="item"></goods-card>
+                </template>
+            </waterfall-shell>
+        </div>
+        <template id="waterfallShell">
+            <div class="waterfallShell flex">
+                <div class="list-column" v-for="(col, i) in colList" :key="i">
+                    <div :id="`waterfall-col${i}`">
+                        <div class="list-item" v-for="(item, j) in col" :key="item[itemKey]">
+                            <slot :item="item" :col-index="i" :index="j"></slot>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id="goodsCard">
+            <div class="goodsCard">
+                <div class="ad" v-if="item.type === 20">
+                    <img v-if="!isError && item.image" :src="item.image" @load="onloadImg(item)" @error="onerrorImg()" />
+                    <img v-else :src="errorImg" />
+                </div>
+                <template v-else>
+                    <div class="img">
+                        <img v-if="!isError && item.image" :src="item.image" @load="onloadImg(item)" @error="onerrorImg()" />
+                        <img :style="{ height: '171px' }" v-else :src="errorImg" />
+                    </div>
+                    <div class="content">
+                        <div>{{ item.name }}</div>
+                        <div>￥{{ item.price }}</div>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <script>
+            const defaultImgUrl = 'https://img1.baidu.com/it/u=1629479163,3719818209&fm=253&fmt=auto&app=138&f=JPEG?w=473&h=399';
+            /**
+             * goodsCard 商品卡片
+             * @property {Object} water 瀑布流内容
+             */
+            const goodsCard = {
+                template: '#goodsCard',
+                props: {
+                    water: {
+                        type: Object,
+                        default: () => ({})
+                    },
+                    errorImg: {
+                        type: String,
+                        default: defaultImgUrl
+                    }
+                },
+                data() {
+                    return {
+                        item: {},
+                        colIndex: 0,
+                        index: 0,
+                        isError: false
+                    };
+                },
+                created() {
+                    const { item, colIndex, index } = this.water;
+                    this.item = item;
+                    this.colIndex = colIndex;
+                    this.index = index;
+                },
+                methods: {
+                    onloadImg(item) {
+                        console.log('>>> onloadImg', item);
+                    },
+                    onerrorImg() {
+                        this.isError = true;
+                        console.log('>>> onerrorImg');
+                    }
+                }
+            };
+        </script>
+        <script>
+            /**
+             * waterfallShell 瀑布流模型
+             * @property {String} itemKey 瀑布流内容唯一key
+             * @property {Number} column 列数
+             * @property {Number} addTime 单位ms。每次向结构插入数据的时间间隔，间隔越长，越能保证两列高度相近，但是对用户体验越不好
+             * @property {Array} list 待渲染的数据
+             */
+            const waterfallShell = {
+                template: '#waterfallShell',
+                props: {
+                    itemKey: {
+                        type: String,
+                        default: 'key'
+                    },
+                    column: {
+                        type: Number,
+                        default: 2
+                    },
+                    addTime: {
+                        type: Number,
+                        default: 100
+                    },
+                    list: {
+                        type: Array,
+                        default: []
+                    }
+                },
+                data() {
+                    return {
+                        colHeight: [], // 列高
+                        colList: [], // 瀑布流 // [[], [], [], []]
+                        currentListIndex: 0, // 加入下一个瀑布流时当前的list索引
+                        nextColIndex: 0 // 下一个加入瀑布流列的索引
+                    };
+                },
+                watch: {
+                    list: {
+                        handler: function (val) {
+                            console.log('>>> watch list', val);
+                            // 如果props list异步获取
+                            if (val.length > 0) {
+                                this.splitData();
+                            }
+                        },
+                        deep: true
+                    }
+                },
+                created() {
+                    console.log('>>> created b');
+                    if (this.colHeight.length === 0) {
+                        this.clear();
+                    }
+                },
+                mounted() {
+                    // 如果props list非异步获取
+                    if (this.list.length > 0) {
+                        console.log('>>> mounted b props list', this.list);
+                        this.splitData();
+                    }
+                },
+                methods: {
+                    // 清除数据
+                    clear() {
+                        this.colList = new Array(this.column).fill(1).map(() => []);
+                        this.colHeight = new Array(this.column).fill(0);
+                        this.currentListIndex = 0;
+                        this.nextColIndex = 0;
+                    },
+                    // 一个个往列表追加
+                    append() {
+                        this.colList[this.nextColIndex].push(this.list[this.currentListIndex++]);
+                    },
+                    // 获取列高度
+                    queryColHeight(selector, url) {
+                        const that = this;
+                        return new Promise((resolve, reject) => {
+                            let img = new Image();
+                            img.src = url;
+                            img.onload = () => {
+                                const colElem = document.getElementById(selector);
+                                const { bottom, top } = colElem.getBoundingClientRect();
+                                resolve({ imgLoad: true, height: bottom - top || 0 });
+                            };
+                            img.onerror = () => {
+                                const colElem = document.getElementById(selector);
+                                const { bottom, top } = colElem.getBoundingClientRect();
+                                // 171-默认imageUrl的高度
+                                resolve({ imgLoad: false, height: bottom - top + 171 || 0 });
+                            };
+                        });
+                    },
+                    // 拼接上原有数据
+                    async splitData() {
+                        for (let i = 0; i < this.column; i++) {
+                            const colHeight = await this.queryColHeight(`waterfall-col${i}`, this.list[this.currentListIndex]?.image);
+                            this.colHeight[i] = colHeight.height;
+                        }
+                        const minH = Math.min(...this.colHeight);
+                        this.nextColIndex = this.colHeight.indexOf(minH);
+                        if (this.nextColIndex < 0) {
+                            this.nextColIndex = 0;
+                        }
+                        if (this.list.length === this.currentListIndex) {
+                            console.log('>>> splitData', this.colHeight);
+                            return;
+                        }
+                        this.append();
+                        console.log('>>> splitData', this.colHeight);
+                        setTimeout(() => {
+                            this.splitData();
+                        }, this.addTime);
+                    }
+                }
+            };
+        </script>
+        <script>
+            const queryList = {
+                result: {
+                    total: '403',
+                    totalPage: '14',
+                    waterFallObjectList: [
+                        {
+                            id: 1,
+                            discount: '2.00',
+                            discountPrice: '123.50',
+                            gotoUrl: 'https://www.baidu.com',
+                            hasStock: true,
+                            image: 'http://pic.sc.chinaz.com/Files/pic/pic9/202002/zzpic23327_s.jpg',
+                            labels: [
+                                {
+                                    activityPrice: '8.00',
+                                    labelName: '满减',
+                                    labelSort: 1,
+                                    labelType: 10
+                                },
+                                {
+                                    activityPrice: '9.00',
+                                    labelName: '内购价',
+                                    labelSort: 1,
+                                    labelType: 20
+                                }
+                            ],
+                            name: '测试商品1',
+                            price: '10.00',
+                            skuId: '101',
+                            type: 10
+                        },
+                        {
+                            id: 2,
+                            gotoUrl: 'https://www.baidu.com',
+                            hasStock: false,
+                            image: 'https://img1.baidu.com/it/u=10332225,1314283850&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
+                            sort: 2,
+                            type: 20
+                        },
+                        {
+                            id: 3,
+                            discount: '2.00',
+                            discountPrice: '123.50',
+                            gotoUrl: 'https://www.baidu.com',
+                            hasStock: true,
+                            image: 'https://img2.baidu.com/it/u=3750788980,1050834039&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=889',
+                            labels: [
+                                {
+                                    activityPrice: '8.00',
+                                    labelName: '满减',
+                                    labelSort: 1,
+                                    labelType: 10
+                                },
+                                {
+                                    activityPrice: '9.00',
+                                    labelName: '内购价',
+                                    labelSort: 1,
+                                    labelType: 20
+                                }
+                            ],
+                            name: '测试商品2',
+                            price: '10.00',
+                            skuId: '101',
+                            type: 10
+                        },
+                        {
+                            id: 4,
+                            discount: '2.00',
+                            discountPrice: '123.50',
+                            gotoUrl: 'https://www.baidu.com',
+                            hasStock: true,
+                            image:
+                                'https://images.test.pay.net/group2/M00/02/03/rBHxQGL1rQOAdj8TAANnkdWfIoc315.jpg' ||
+                                'https://img1.baidu.com/it/u=368964486,783010904&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=889',
+                            labels: [
+                                {
+                                    activityPrice: '8.00',
+                                    labelName: '满减',
+                                    labelSort: 1,
+                                    labelType: 10
+                                },
+                                {
+                                    activityPrice: '9.00',
+                                    labelName: '内购价',
+                                    labelSort: 1,
+                                    labelType: 20
+                                }
+                            ],
+                            name: '测试商品3',
+                            price: '10.00',
+                            skuId: '101',
+                            type: 10
+                        },
+                        {
+                            id: 5,
+                            gotoUrl: 'https://www.baidu.com',
+                            hasStock: false,
+                            image: 'https://pic.3gbizhi.com/2020/0919/20200919020101662.jpg',
+                            sort: 2,
+                            type: 20
+                        }
+                    ],
+                    pageSize: '30',
+                    currentPage: '0'
+                },
+                success: true,
+                errorCode: null,
+                errorMsg: null
+            };
+            new Vue({
+                el: '#app',
+                components: { waterfallShell, goodsCard },
+                data: {
+                    flowList: [], // 瀑布流数据
+                    column: 2 // 瀑布流列数
+                },
+                created() {
+                    console.log('>>> created a');
+                    this.getList();
+                },
+                methods: {
+                    // 获取list
+                    getList() {
+                        setTimeout(() => {
+                            this.flowList = queryList.result.waterFallObjectList;
+                            this.flowList.forEach((item) => {
+                                item.key = item.id;
+                            });
+                        }, 500);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
