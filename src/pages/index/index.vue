@@ -5,7 +5,8 @@
             <text class="title">{{ title }}</text>
         </view>
         <view>
-            <button @click="onJumpSticky">jump page sticky</button>
+            <button @click="onJumpSticky">Sticky 吸顶</button>
+            <button @click="onJumpSticky">HighlightText 高亮文本</button>
         </view>
     </view>
 </template>
@@ -20,7 +21,8 @@ export default {
     onLoad() {},
     methods: {
         onJumpSticky() {
-            uni.navigateTo({ url: '/pages/sticky/index' });
+            uni.navigateTo({ url: '/pages/highlightText/index' });
+            // uni.navigateTo({ url: '/pages/sticky/index' });
         }
     }
 };

@@ -1,4 +1,7 @@
 {
+    "easycom": {
+        "^ht-(.*)": "ht-view/components/ht-$1/ht-$1.vue"
+    },
     "pages": [
         //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
         {
@@ -11,6 +14,12 @@
             "path": "pages/sticky/index",
             "style": {
                 "navigationBarTitleText": "sticky"
+            }
+        },
+        {
+            "path": "pages/highlightText/index",
+            "style": {
+                "navigationBarTitleText": "highlightText"
             }
         }
     ],

@@ -12,7 +12,7 @@
 
 <script>
 /**
- * htSticky 吸顶
+ * sticky 吸顶
  * @property {Number} scrollTop
  * @property {Number | String} stickyTop  吸顶时与顶部的距离，单位px
  * @property {Boolean} container 是否指定容器，即内容放置插槽content内
@@ -25,7 +25,7 @@
  * @event {Function} change
  */
 export default {
-    name: 'HtSticky',
+    name: 'ht-sticky',
     emits: ['sticky', 'change'],
     props: {
         scrollTop: {

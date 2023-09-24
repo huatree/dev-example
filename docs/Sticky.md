@@ -1,4 +1,4 @@
-## ht-sticky 吸顶
+## Sticky 吸顶
 
 ### 基本用法
 

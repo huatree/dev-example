@@ -1,0 +1,39 @@
+{
+    "name": "ht-view",
+    "version": "1.0.0",
+    "description": "ht-view UI，是uni-app UI框架，面向多种业务场景的组件和便捷的工具会让您少走弯路",
+    "main": "index.js",
+    "keywords": [
+      "ht-view",
+      "ht-view",
+      "uni-app",
+      "uni-app ui",
+      "uniapp",
+      "ht-viewui",
+      "ht-view ui",
+      "ht-viewUI",
+      "ht-viewui",
+      "ht-viewUI",
+      "ht-view UI",
+      "uni ui",
+      "uni UI",
+      "uniapp ui",
+      "ui",
+      "UI框架",
+      "uniapp ui框架",
+      "uniapp UI"
+    ],
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+      "type": "git",
+      "url": ""
+    },
+    "devDependencies": {
+      "sass": "1.26.2",
+      "sass-loader": "8.0.2"
+    },
+    "author": "ht-view",
+    "license": "MIT"
+  }
