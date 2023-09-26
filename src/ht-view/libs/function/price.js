@@ -1,14 +1,12 @@
-// 是否字符串类型
-function isString(value) {
-    return Object.prototype.toString.call(value) === '[object string]';
-}
+import * as dt from './dataType';
+
 /**
  * 价格小数前缀部分
  * @param {String} price
  * @returns
  */
 export function pricePrefix(price) {
-    return isString(price) ? price.split('.')[0] : '';
+    return dt.isString(price) ? price.split('.')[0] : '';
 }
 /**
  * 价格小数后缀部分
