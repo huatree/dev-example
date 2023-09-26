@@ -5,8 +5,9 @@
             <text class="title">{{ title }}</text>
         </view>
         <view>
-            <button @click="onJumpSticky">Sticky 吸顶</button>
-            <button @click="onJumpSticky">HighlightText 高亮文本</button>
+            <button @click="onJumpSticky('sticky')">Sticky 吸顶</button>
+            <button @click="onJumpSticky('highlightText')">HighlightText 高亮文本</button>
+            <button @click="onJumpSticky('countdown')">countdown 倒计时</button>
         </view>
     </view>
 </template>
@@ -20,9 +21,8 @@ export default {
     },
     onLoad() {},
     methods: {
-        onJumpSticky() {
-            uni.navigateTo({ url: '/pages/highlightText/index' });
-            // uni.navigateTo({ url: '/pages/sticky/index' });
+        onJumpSticky(path) {
+            uni.navigateTo({ url: `/pages/${path}/index` });
         }
     }
 };

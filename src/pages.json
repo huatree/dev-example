@@ -21,6 +21,12 @@
             "style": {
                 "navigationBarTitleText": "highlightText"
             }
+        },
+        {
+            "path": "pages/countdown/index",
+            "style": {
+                "navigationBarTitleText": "countdown"
+            }
         }
     ],
     "globalStyle": {
